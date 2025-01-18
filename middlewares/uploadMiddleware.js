@@ -1,17 +1,17 @@
 const multer = require("multer");
 const path = require("path");
+const rootPath = path.resolve(__dirname, "..");
 
 // Set storage engine
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Ensure 'uploads' directory exists
-    cb(null, "uploads/");
+    cb(null, path.join(rootPath, "uploads")); // Use rootPath for consistent paths
   },
   filename: (req, file, cb) => {
-    // Use a unique filename to avoid conflicts
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
+
 
 // File filter for only PDF files
 const fileFilter = (req, file, cb) => {

@@ -7,16 +7,19 @@ exports.addCandidate = async (req, res) => {
   try {
     const { name, email, phone, jobTitle } = req.body;
 
+    // Validate required fields
     if (!name || !email || !phone || !jobTitle) {
       return res
         .status(400)
         .json({ message: "All fields except resume are required" });
     }
 
+    // Validate resume file presence
     if (!req.file) {
       return res.status(400).json({ message: "Resume file is required" });
     }
 
+    // Validate resume file type
     const allowedMimeTypes = ["application/pdf"];
     if (!allowedMimeTypes.includes(req.file.mimetype)) {
       return res
@@ -24,10 +27,12 @@ exports.addCandidate = async (req, res) => {
         .json({ message: "Only PDF files are allowed as resumes" });
     }
 
+    // Construct resume file URL
     const resumeUrl = req.file.filename.endsWith(".pdf")
       ? `/uploads/${req.file.filename}`
       : null;
 
+    // Create the candidate in the database
     const candidate = await Candidate.create({
       name,
       email,
@@ -37,13 +42,14 @@ exports.addCandidate = async (req, res) => {
       referredBy: req.user.id,
     });
 
-    // Log activity
+    // Log user activity
     await ActivityLog.create({
       action: "Added Candidate",
       details: `Candidate ${name} was added.`,
       user: req.user.id,
     });
 
+    // Respond with success
     res
       .status(201)
       .json({ message: "Candidate added successfully", candidate });
@@ -52,6 +58,7 @@ exports.addCandidate = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 exports.getAllCandidates = async (req, res) => {
   try {
